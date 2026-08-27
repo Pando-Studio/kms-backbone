@@ -1,0 +1,62 @@
+# Convention checks — blocking CI job.
+#
+# Runs the convention lint script over every Markdown file changed by the
+# push or pull request. Any violation fails the job, which (with branch
+# protection requiring this check) rejects the non-conforming contribution.
+#
+# This is the authoritative layer of the checks described in
+# docs/04-knowledge-cicd.md — local git/agent hooks give faster feedback,
+# but this job is the enforcement point of record.
+#
+# Portable: the same logic translates directly to GitLab CI or any runner
+# that can diff two commits and run a shell script.
+
+name: Conventions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-conventions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need the previous commit (push) or the merge base (PR) to diff against.
+          fetch-depth: 0
+
+      - name: Determine changed Markdown files
+        id: changed
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            FILES=$(git diff --name-only --diff-filter=ACMR "$(git merge-base "$BASE" HEAD)" HEAD -- '*.md')
+          else
+            FILES=$(git diff --name-only --diff-filter=ACMR HEAD~1 HEAD -- '*.md')
+          fi
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$FILES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "count=$(echo "$FILES" | grep -c . || true)" >> "$GITHUB_OUTPUT"
+
+      - name: Lint changed files
+        if: steps.changed.outputs.count != '0'
+        env:
+          FILES: ${{ steps.changed.outputs.files }}
+        run: |
+          # scripts/lint-kms.sh takes one file path per invocation and exits
+          # non-zero on violation — the same script wired as a local hook.
+          FAIL=0
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            if ! bash scripts/lint-kms.sh "$file"; then
+              echo "::error file=$file::Convention violation (see log above)"
+              FAIL=1
+            fi
+          done <<< "$FILES"
+          exit $FAIL

@@ -1,0 +1,95 @@
+# Vectorization pipeline — REFERENCE workflow, adapt before use.
+#
+# This workflow implements the indexing chain of docs/04-knowledge-cicd.md:
+# on every push to main, changed Markdown files are chunked, embedded, and
+# upserted into the semantic index; deleted files have their chunks removed.
+#
+# THE STRUCTURAL PROPERTY THIS WORKFLOW EXISTS FOR:
+#   This workflow runs *per repository*, and writes into a namespace named
+#   after *this repository*. It never indexes another repo's content, and
+#   no other repo's workflow writes into this namespace. That is what makes
+#   retrieval inherit the git access partition by construction — an agent
+#   queries only the namespaces of repos in its checkout scope, so there is
+#   no post-hoc permission filtering to build or maintain.
+#   => Install a copy of this workflow in EACH sub-repository, not only in
+#      the hub. Do not centralize indexing into one shared index.
+#
+# WHAT YOU MUST ADAPT:
+#   - scripts/vectorize.sh is a placeholder for your indexing script; the
+#     contract it must fulfil is specified in reference/vectorization/README.md
+#     (inputs: changed-file list + repo identity; chunk by heading; embed via
+#     any provider; upsert/delete into one namespace per repository).
+#   - EMBEDDINGS_API_URL / EMBEDDINGS_API_KEY: your embedding provider.
+#   - VECTOR_DB_URL / VECTOR_DB_KEY: your vector store — e.g. a Postgres
+#     database with a vector extension (pgvector), or any dedicated store.
+#   - Configure these as repository secrets on your git host.
+
+name: Vectorize
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.md'
+  # Manual trigger for a full rebuild — required after changing chunking
+  # parameters, the embedding model, or metadata extraction (see
+  # "Index lifecycle" in docs/04-knowledge-cicd.md).
+  workflow_dispatch:
+    inputs:
+      full_rebuild:
+        description: 'Re-index the entire corpus instead of the last diff'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  vectorize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # fetch-depth 2: we diff HEAD against HEAD~1 for incremental runs.
+          fetch-depth: 2
+
+      - name: Determine files to (re)index
+        id: diff
+        run: |
+          if [ "${{ github.event.inputs.full_rebuild || 'false' }}" = "true" ]; then
+            # Full rebuild: every Markdown file in the working tree.
+            FILES=$(git ls-files '*.md')
+          else
+            # Incremental (the default): only files touched by this push.
+            # --diff-filter=ACMRD includes Deleted files on purpose — the
+            # indexing script detects that a listed file is absent from disk
+            # and DELETES its chunks from the index (deletion propagation).
+            FILES=$(git diff --name-only --diff-filter=ACMRD HEAD~1 HEAD -- '*.md')
+          fi
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$FILES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "count=$(echo "$FILES" | grep -c . || true)" >> "$GITHUB_OUTPUT"
+
+      - name: Vectorize changed files
+        if: steps.diff.outputs.count != '0'
+        env:
+          # ---- Adapt: your embedding provider ----
+          EMBEDDINGS_API_URL: ${{ secrets.EMBEDDINGS_API_URL }}
+          EMBEDDINGS_API_KEY: ${{ secrets.EMBEDDINGS_API_KEY }}
+          # ---- Adapt: your vector store ----
+          VECTOR_DB_URL: ${{ secrets.VECTOR_DB_URL }}
+          VECTOR_DB_KEY: ${{ secrets.VECTOR_DB_KEY }}
+          # Repo identity = index namespace. Deriving it from the repo name
+          # (not a hardcoded value) keeps the workflow copy-pastable across
+          # sub-repositories, which is exactly how the partition is preserved.
+          REPO_NAMESPACE: ${{ github.event.repository.name }}
+          CHANGED_FILES: ${{ steps.diff.outputs.files }}
+        run: |
+          # scripts/vectorize.sh — see reference/vectorization/README.md for
+          # the full contract. In short, for each file in CHANGED_FILES it:
+          #   1. deletes existing chunks for that path in REPO_NAMESPACE
+          #      (also covers files deleted from the working tree);
+          #   2. if the file exists: chunks by heading, embeds, upserts
+          #      with keys (namespace, file_path, chunk_index).
+          bash scripts/vectorize.sh
