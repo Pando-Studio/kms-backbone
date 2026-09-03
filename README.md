@@ -19,6 +19,7 @@ Read the full concept in [docs/00-concept.md](docs/00-concept.md) — five minut
 
 | Directory | Contents |
 |---|---|
+| [`ontology/`](ontology/) | **Start here.** The audit kit to reveal your organization's ontology before installing anything (3-step method, 25-question interview grid, deliverables, anti-patterns), what a profile declares, three worked profile sketches, and the reference tree |
 | [`docs/`](docs/) | The full abstraction, one document per layer: knowledge pipeline, governance, skills & agents, CI/CD of knowledge, connections, tooling & sandbox, methodology, conventions |
 | [`template/`](template/) | An instantiable KMS skeleton: project grammar, 16 agent skills, lint hooks, CI workflows, governance templates, agent context file |
 | [`reference/`](reference/) | Genericized implementations (each marked `spec` or `reference`): vectorization pipeline, MCP connector configs, agent sandbox |
@@ -26,10 +27,13 @@ Read the full concept in [docs/00-concept.md](docs/00-concept.md) — five minut
 
 ## Quick start
 
-1. Click **Use this template** (or copy `template/`).
+The first question is not "what folders do I create" but "what IS my organization's structure". So:
+
+1. **Run the ontology audit** ([ontology/audit-kit.md](ontology/audit-kit.md)): about one day on site plus one day of analysis. Its output is your organization's **profile**: modules, entity types, vocabularies, access tiers ([ontology/profiles.md](ontology/profiles.md) shows the shape).
 2. Read [docs/00-concept.md](docs/00-concept.md), then [docs/conventions.md](docs/conventions.md).
-3. Open the repository with your agent CLI — `CLAUDE.md` wires the conventions.
-4. Create your first project from `projects/_template/` (or run `/new-project`), drop a meeting transcript into its `1.signals/`, and run `/process-signals`.
+3. Click **Use this template** (or copy `template/`) and instantiate your profile into the reference tree ([ontology/README.md](ontology/README.md)).
+4. Open the repository with your agent CLI: `CLAUDE.md` wires the conventions.
+5. Create your first dossier from `projects/_template/` (or run `/new-project`), drop a meeting transcript into its `1.signals/`, and run `/process-signals`.
 
 Full instantiation guide: [template/README.md](template/README.md).
 
