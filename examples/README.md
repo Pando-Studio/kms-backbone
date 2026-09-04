@@ -1,6 +1,9 @@
 # Examples
 
-This directory shows the KMS Backbone conventions applied to one **entirely fictional** project: `acme-project/`, a client engagement by **Acme Studio** (a fictional 8-person digital agency) for **acme-travel**, a client asking for a booking-flow revamp of their travel site.
+This directory shows the KMS Backbone conventions applied to one **entirely fictional** organization: **Acme Studio** (an 8-person digital agency), through two artifacts:
+
+- [`acme-profile.md`](acme-profile.md) — the studio's **ontology profile**, i.e. what the audit (`../ontology/audit-kit.md`) delivers: modules, entity types, vocabularies in the team's words, fast-lane whitelist, with audit notes showing the trade-offs.
+- [`acme-project/`](acme-project/) — one client engagement for **acme-travel** (a booking-flow revamp of their travel site), showing a full pipeline cycle.
 
 Every file here is invented for illustration. Any resemblance to a real company, person, or project is coincidental.
 

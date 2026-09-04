@@ -4,6 +4,7 @@ Documentation for KMS Backbone: a Git+Markdown knowledge management system for h
 
 ## Recommended reading order
 
+0. [../ontology/](../ontology/) — before any folder exists: reveal your organization's ontology (audit kit) and write its profile; these docs then describe the kernel that instantiates it
 1. [00-concept.md](00-concept.md) — the problem and the four bricks
 2. [01-knowledge-layer.md](01-knowledge-layer.md) — the repository grammar
 3. [02-governance.md](02-governance.md) — access and validation

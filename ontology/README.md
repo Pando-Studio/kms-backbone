@@ -52,4 +52,4 @@ Rules that come from operating this system in production, not from theory:
 
 ## Where this fits in the repo
 
-Run the audit ([audit-kit.md](audit-kit.md)) → write your profile ([profiles.md](profiles.md) shows the shape) → instantiate with [`template/`](../template/) → operate with [`docs/`](../docs/) as the narrative reference.
+Run the audit ([audit-kit.md](audit-kit.md)) → write your profile ([profiles.md](profiles.md) shows the shape; [`examples/acme-profile.md`](../examples/acme-profile.md) is a filled one; [`template/infra/ontology/`](../template/infra/ontology/) has the blank forms) → instantiate with [`template/`](../template/) → operate with [`docs/`](../docs/) as the narrative reference.
