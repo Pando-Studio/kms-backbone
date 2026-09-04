@@ -45,6 +45,10 @@ Markdown + Git is the whole dependency. The skills ship in Claude Code format bu
 
 Built and operated internally by [Pando Studio](https://pando-studio.com) since October 2025 (1,400+ versioned documents across projects, research and operations). The system is formalized in academic research on the governance of hybrid human-agent organizations (publication in progress — citation to come).
 
+## Research & reproducibility
+
+The central governance claim of this backbone (retrieval cannot cross an access boundary when the index is computed per access perimeter) is under empirical evaluation. An evaluation protocol for inter-tier retrieval leakage and two corpora — one derived from a public QA dataset, one fully fictional organizational corpus that instantiates this very grammar, instrumented with canary facts — will be released as a standalone, citable artifact (dataset + harness, archived with a DOI) alongside the publication, for full reproducibility. Watch this section for the link.
+
 ## Professional services
 
 The backbone is free (Apache 2.0). Pando Studio provides audit, implementation and training for organizations adopting it — [pando-studio.com](https://pando-studio.com).
